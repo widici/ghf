@@ -6,8 +6,8 @@ use crate::api::repo::{RepoData, request_repos};
 pub async fn main() -> Result<(), reqwest::Error> {
     let data: Vec<RepoData> = request_repos("widici").await?;
     for repo in data {
-        if repo.forks.is_some() {
-            println!("{}", repo.forks.unwrap())
+        if repo.language.is_some() {
+            println!("{}", repo.language.unwrap())
         }
     }
     Ok(())

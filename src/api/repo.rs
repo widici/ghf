@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
 
@@ -23,7 +24,14 @@ pub async fn request_repos(username: &str) -> Result<Vec<RepoData>, reqwest::Err
         (acc.0 + i.forks.unwrap(), acc.1 + i.stars.unwrap())
     });
 
-    println!("{} {}", sum_stars, sum_forks);
+    let mut languages: Vec<String> = Vec::new();
+    for repo in repos.iter() {
+        if repo.language.is_some() && !languages.contains(&repo.language.as_ref().unwrap()) {
+            languages.push(repo.language.as_ref().unwrap().to_string())
+        }
+    }
+
+    println!("{} {} {}", sum_stars, sum_forks, languages.join(", "));
 
     return Ok(repos)
 }
