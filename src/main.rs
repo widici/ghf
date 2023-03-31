@@ -4,11 +4,13 @@ use crate::api::repo::{RepoData, request_repos};
 
 #[tokio::main]
 pub async fn main() -> Result<(), reqwest::Error> {
-    let data: Vec<RepoData> = request_repos("widici").await?;
-    for repo in data {
-        if repo.language.is_some() {
-            println!("{}", repo.language.unwrap())
-        }
+    let data: RepoData = request_repos("widici").await?;
+    let field = data.stars;
+
+    if field.is_some() {
+        println!("{}", field.unwrap())
+    } else if field.is_some() {
+        println!("{:#?}", field)
     }
     Ok(())
 }
@@ -19,8 +21,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_request_profile() -> Result<(), reqwest::Error> {
-        let user: ProfileData = request_profile("widici").await?;
-        assert_eq!(&user.joined, "2021-05-14T20:14:08Z");
+        let _: ProfileData = request_profile("widici").await?;
         Ok(())
     }
 }

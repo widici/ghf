@@ -6,12 +6,12 @@ use serde::{Deserialize, Serialize};
 pub struct RepoData {
     pub language: Option<String>,
     #[serde(rename = "forks_count")]
-    pub forks: Option<i32>,
+    pub forks: i32,
     #[serde(rename = "stargazers_count")]
-    pub stars: Option<i32>,
+    pub stars: i32,
 }
 
-pub async fn request_repos(username: &str) -> Result<Vec<RepoData>, reqwest::Error> {
+pub async fn request_repos(username: &str) -> Result<RepoData, reqwest::Error> {
     let repos: Vec<RepoData> = reqwest::Client::new()
         .get(format!("https://api.github.com/users/{}/repos", username))
         .header(USER_AGENT, "ghfetch")
@@ -21,7 +21,7 @@ pub async fn request_repos(username: &str) -> Result<Vec<RepoData>, reqwest::Err
         .await?;
 
     let (sum_stars, sum_forks) = repos.iter().fold((0, 0), |acc, i| {
-        (acc.0 + i.forks.unwrap(), acc.1 + i.stars.unwrap())
+        (acc.0 + i.stars, acc.1 + i.forks)
     });
 
     let mut languages: Vec<String> = Vec::new();
@@ -30,8 +30,7 @@ pub async fn request_repos(username: &str) -> Result<Vec<RepoData>, reqwest::Err
             languages.push(repo.language.as_ref().unwrap().to_string())
         }
     }
+    let languages: String = languages.join(", ");
 
-    println!("{} {} {}", sum_stars, sum_forks, languages.join(", "));
-
-    return Ok(repos)
+    return Ok( RepoData { language: Option::Some(languages), forks: sum_forks, stars: sum_stars, } )
 }
