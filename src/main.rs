@@ -1,10 +1,15 @@
 mod api;
 use crate::api::profile::{ProfileData, request_profile};
+use crate::api::repo::{RepoData, request_repos};
 
 #[tokio::main]
 pub async fn main() -> Result<(), reqwest::Error> {
-    let data: ProfileData = request_profile("jake").await?;
-    println!("{:?}", data.joined);
+    let data: Vec<RepoData> = request_repos("widici").await?;
+    for repo in data {
+        if repo.forks.is_some() {
+            println!("{}", repo.forks.unwrap())
+        }
+    }
     Ok(())
 }
 
