@@ -1,5 +1,4 @@
 use reqwest::header::USER_AGENT;
-use serde;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
