@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RepoData {
-    #[serde(default)]
     pub language: Option<String>,
     #[serde(rename = "forks_count")]
     pub forks: Option<i32>,
@@ -19,6 +18,12 @@ pub async fn request_repos(username: &str) -> Result<Vec<RepoData>, reqwest::Err
         .await?
         .json()
         .await?;
+
+    let (sum_stars, sum_forks) = repos.iter().fold((0, 0), |acc, i| {
+        (acc.0 + i.forks.unwrap(), acc.1 + i.stars.unwrap())
+    });
+
+    println!("{} {}", sum_stars, sum_forks);
 
     return Ok(repos)
 }
