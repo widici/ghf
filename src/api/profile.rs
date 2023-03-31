@@ -2,7 +2,7 @@ use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct UserData {
+pub struct ProfileData {
     pub name: Option<String>,
     pub company: Option<String>,
     #[serde(rename = "blog")]
@@ -21,8 +21,8 @@ pub struct UserData {
     pub joined: String,
 }
 
-pub async fn request_user(username: &str) -> Result<UserData, reqwest::Error> {
-    let result: UserData = reqwest::Client::new()
+pub async fn request_profile(username: &str) -> Result<ProfileData, reqwest::Error> {
+    let result: ProfileData = reqwest::Client::new()
         .get(format!("https://api.github.com/users/{}", username))
         .header(USER_AGENT, "ghfetch")
         .send()
