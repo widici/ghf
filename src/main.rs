@@ -18,7 +18,7 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let user_data: UserData = UserData::new("muhamed").await?;
+    let user_data: UserData = UserData::new("widici").await?;
     let field = user_data.repo_data.language;
 
     if field.is_some() {
@@ -30,19 +30,11 @@ async fn main() -> Result<(), reqwest::Error> {
 
 #[cfg(test)]
 mod tests {
-    use crate::api::profile::{ProfileData, request_profile};
-    use crate::api::repo::{RepoData, request_repos};
+    use crate::{UserData};
 
     #[tokio::test]
-    async fn request_profile_works() -> Result<(), reqwest::Error> {
-        let _: ProfileData = request_profile("widici").await?;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn request_repos_works() -> Result<(), reqwest::Error> {
-        let _: RepoData = request_repos("widici").await?;
+    async fn requests_works() -> Result<(), reqwest::Error> {
+        let _: UserData = UserData::new("widici").await?;
         Ok(())
     }
 }
-
