@@ -6,9 +6,9 @@ use serde::{Deserialize, Serialize};
 pub struct RepoData {
     pub language: Option<String>,
     #[serde(rename = "forks_count")]
-    pub forks: i32,
+    pub forks: Option<i32>,
     #[serde(rename = "stargazers_count")]
-    pub stars: i32,
+    pub stars: Option<i32>,
 }
 
 pub async fn request_repos(username: &str) -> Result<RepoData, reqwest::Error> {
@@ -21,7 +21,7 @@ pub async fn request_repos(username: &str) -> Result<RepoData, reqwest::Error> {
         .await?;
 
     let (sum_stars, sum_forks) = repos.iter().fold((0, 0), |acc, i| {
-        (acc.0 + i.stars, acc.1 + i.forks)
+        (acc.0 + i.stars.unwrap(), acc.1 + i.forks.unwrap())
     });
 
     let mut languages: Vec<String> = Vec::new();
@@ -32,5 +32,5 @@ pub async fn request_repos(username: &str) -> Result<RepoData, reqwest::Error> {
     }
     let languages: String = languages.join(", ");
 
-    return Ok( RepoData { language: Option::Some(languages), forks: sum_forks, stars: sum_stars, } )
+    return Ok( RepoData { language: Some(languages), forks: Some(sum_forks), stars: Some(sum_stars) } )
 }

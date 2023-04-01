@@ -13,10 +13,10 @@ pub struct ProfileData {
     #[serde(rename = "twitter_username")]
     pub twitter: Option<String>,
     #[serde(rename = "public_repos")]
-    pub repos: i32,
+    pub repos: Option<i32>,
     #[serde(rename = "public_gists")]
-    pub gists: i32,
-    pub followers: i32,
+    pub gists: Option<i32>,
+    pub followers: Option<i32>,
     #[serde(rename = "created_at")]
     pub joined: Option<String>,
 }
