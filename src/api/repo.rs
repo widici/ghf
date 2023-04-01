@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
 
