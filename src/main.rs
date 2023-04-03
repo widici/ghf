@@ -1,6 +1,7 @@
 mod api;
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
+use fields_iter::FieldsIter;
 
 struct UserData {
     profile_data: ProfileData,
@@ -18,11 +19,22 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let user_data: UserData = UserData::new("widici").await?;
-    let field = user_data.repo_data.language;
+    let user_data: UserData = UserData::new("jake").await?;
 
-    if field.is_some() {
-        println!("{}", field.unwrap());
+    for (name, value) in FieldsIter::new(&user_data.profile_data)
+        .chain(FieldsIter::new(&user_data.repo_data))
+    {
+        if let Some(value) = value.downcast_ref::<Option<String>>() {
+            if let Some(inner) = value.as_ref().filter(|v| !v.is_empty()) {
+                println!("{}: {}", name, inner);
+            }
+        } else if let Some(value) = value.downcast_ref::<Option<i32>>() {
+            if let Some(inner) = value.as_ref() {
+                println!("{}: {}", name, inner);
+            }
+        } else {
+            continue
+        }
     }
 
     Ok(())

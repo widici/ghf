@@ -100,6 +100,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "fields-iter"
+version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3edfbdc0f742f479dece939ba9c3999962c95d324849ae764dfcebd419fb884b"
+dependencies = [
+ "fields-iter-macros",
+]
+
+[[package]]
+name = "fields-iter-macros"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c0d7d1a714a91ae8b40f541b455eb63c84157511ec30bee8649ca8db27453412"
+dependencies = [
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -172,6 +191,7 @@ dependencies = [
 name = "ghfetch"
 version = "0.1.0"
 dependencies = [
+ "fields-iter",
  "reqwest",
  "serde",
  "serde_json",

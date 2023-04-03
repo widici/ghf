@@ -1,7 +1,7 @@
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, fields_iter::FieldsInspect, Debug)]
 pub struct ProfileData {
     pub name: Option<String>,
     pub company: Option<String>,
