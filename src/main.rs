@@ -1,6 +1,7 @@
 mod api;
 
 use std::fmt::{Display, Formatter};
+use colored::Colorize;
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
 use fields_iter::FieldsIter;
@@ -17,11 +18,11 @@ impl Display for UserData {
         {
             if let Some(value) = value.downcast_ref::<Option<String>>() {
                 if let Some(inner) = value.as_ref().filter(|v| !v.is_empty()) {
-                    writeln!(f, "{}: {}", name, inner).expect("TODO: panic message");
+                    writeln!(f, "{}: {}", name.color("red"), inner).unwrap();
                 }
             } else if let Some(value) = value.downcast_ref::<Option<i32>>() {
                 if let Some(inner) = value.as_ref() {
-                    writeln!(f, "{}: {}", name, inner).expect("TODO: panic message");
+                    writeln!(f, "{}: {}", name.color("red"), inner).unwrap();
                 }
             }
         }
@@ -40,7 +41,7 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let user_data: UserData = UserData::new("widici").await?;
+    let user_data: UserData = UserData::new("rust-lang").await?;
     println!("{}", user_data);
 
     Ok(())

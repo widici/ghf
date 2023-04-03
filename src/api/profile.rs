@@ -19,6 +19,7 @@ pub struct ProfileData {
     pub followers: Option<i32>,
     #[serde(rename = "created_at")]
     pub joined: Option<String>,
+    pub id: Option<i32>,
 }
 
 pub async fn request_profile(username: &str) -> Result<ProfileData, reqwest::Error> {
