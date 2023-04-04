@@ -20,10 +20,8 @@ impl Display for UserData {
                 if let Some(inner) = value.as_ref().filter(|v| !v.is_empty()) {
                     writeln!(f, "{}: {}", name.color("red"), inner).unwrap();
                 }
-            } else if let Some(value) = value.downcast_ref::<Option<i32>>() {
-                if let Some(inner) = value.as_ref() {
-                    writeln!(f, "{}: {}", name.color("red"), inner).unwrap();
-                }
+            } else if let Some(value) = value.downcast_ref::<i32>() {
+                writeln!(f, "{}: {}", name.color("red"), value).unwrap();
             }
         }
         Ok(())
@@ -41,7 +39,7 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let user_data: UserData = UserData::new("rust-lang").await?;
+    let user_data: UserData = UserData::new("widici").await?;
     println!("{}", user_data);
 
     Ok(())

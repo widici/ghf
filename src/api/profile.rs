@@ -13,13 +13,13 @@ pub struct ProfileData {
     #[serde(rename = "twitter_username")]
     pub twitter: Option<String>,
     #[serde(rename = "public_repos")]
-    pub repos: Option<i32>,
+    pub repos: i32,
     #[serde(rename = "public_gists")]
-    pub gists: Option<i32>,
-    pub followers: Option<i32>,
+    pub gists: i32,
+    pub followers: i32,
     #[serde(rename = "created_at")]
     pub joined: Option<String>,
-    pub id: Option<i32>,
+    pub id: i32,
 }
 
 pub async fn request_profile(username: &str) -> Result<ProfileData, reqwest::Error> {
