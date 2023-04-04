@@ -4,6 +4,7 @@ use std::fmt::{Display, Formatter};
 use colored::Colorize;
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
+use crate::api::image::request_image;
 use fields_iter::FieldsIter;
 
 struct UserData {
@@ -39,6 +40,8 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
+    let _ = request_image(84205124, 15 as u32).await.unwrap();
+
     let user_data: UserData = UserData::new("widici").await?;
     println!("{}", user_data);
 
@@ -58,7 +61,7 @@ mod tests {
 
     #[test]
     fn request_image_works() -> Result<(), reqwest::Error> {
-        let _ = request_image(84205124);
+        let _ = request_image(84205124, 15 as u32);
         Ok(())
     }
 }

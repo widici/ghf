@@ -13,7 +13,7 @@ pub struct RepoData {
 
 pub async fn request_repos(username: &str) -> Result<RepoData, reqwest::Error> {
     let repos: Vec<RepoData> = reqwest::Client::new()
-        .get(format!("https://api.github.com/users/{}/repos", username))
+        .get(&format!("https://api.github.com/users/{}/repos", username))
         .header(USER_AGENT, "ghfetch")
         .send()
         .await?
