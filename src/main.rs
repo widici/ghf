@@ -1,6 +1,5 @@
 mod api;
 
-use std::fmt::{Display, Formatter};
 use colored::Colorize;
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
@@ -12,22 +11,6 @@ struct UserData {
     repo_data: RepoData,
 }
 
-impl Display for UserData {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        for (name, value) in FieldsIter::new(&self.profile_data) 
-            .chain(FieldsIter::new(&self.repo_data))
-        {
-            if let Some(value) = value.downcast_ref::<Option<String>>() {
-                if let Some(inner) = value.as_ref().filter(|v| !v.is_empty()) {
-                    writeln!(f, "{}: {}", name.color("cyan"), inner).unwrap();
-                }
-            } else if let Some(value) = value.downcast_ref::<i32>() {
-                writeln!(f, "{}: {}", name.color("cyan"), value).unwrap();
-            }
-        }
-        Ok(())
-    }
-}
 
 impl UserData {
     async fn new(username: &str) -> Result<UserData, reqwest::Error> {
@@ -36,14 +19,39 @@ impl UserData {
 
         return Ok( UserData { profile_data, repo_data } )
     }
+
+    async fn display(self) -> Result<(), reqwest::Error> {
+        let mut fields: Vec<String> = Vec::new();
+        for (name, value) in FieldsIter::new(&self.profile_data)
+            .chain(FieldsIter::new(&self.repo_data))
+        {
+            if let Some(value) = value.downcast_ref::<Option<String>>() {
+                if let Some(inner) = value.as_ref().filter(|v| !v.is_empty()) {
+                    fields.insert(fields.len(), format!("{}: {}", name.color("cyan"), inner));
+                }
+            } else if let Some(value) = value.downcast_ref::<i32>() {
+                fields.insert(fields.len(), format!("{}: {}", name.color("cyan"), value));
+            }
+        }
+
+        let mut rows = request_image(self.profile_data.id, fields.len() as u32).await.unwrap();
+
+        for field in fields {
+            println!("{}   {}", rows.remove(0), field)
+        }
+
+        for row in rows {
+            println!("{}", row)
+        }
+
+        Ok(())
+    }
 }
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let user_data: UserData = UserData::new("color").await?;
-    let _ = request_image(user_data.profile_data.id, 20*2 as u32).await.unwrap();
-
-    println!("{}", user_data);
+    let user_data: UserData = UserData::new("widici").await?;
+    user_data.display().await.unwrap();
 
     Ok(())
 

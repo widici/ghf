@@ -7,13 +7,13 @@ fn get_ascii(intensity: u8) -> &'static str {
     return ascii[(intensity/32) as usize]
 }
 
-pub async fn request_image(id: i32, size: u32) -> Result<(), reqwest::Error> {
+pub async fn request_image(id: i32, size: u32) -> Result<Vec<String>, reqwest::Error> {
     let endpoint = format!("https://avatars.githubusercontent.com/u/{}", id);
     let image_bytes = reqwest::get(&endpoint).await?
         .bytes().await?;
 
     let image = image::load_from_memory(&image_bytes).unwrap()
-        .resize(size, size, FilterType::Nearest);
+        .resize(size*2, size*2, FilterType::Nearest);
 
     let (height, width) = image.dimensions();
 
@@ -32,7 +32,5 @@ pub async fn request_image(id: i32, size: u32) -> Result<(), reqwest::Error> {
         rows.insert(rows.len(), row.join(""));
     }
 
-    println!("{}", rows.join("\n"));
-
-    Ok(())
+    Ok(rows)
 }
