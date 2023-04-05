@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, fields_iter::FieldsInspect, Debug)]
 pub struct ProfileData {
+    pub login: Option<String>,
     pub name: Option<String>,
     pub company: Option<String>,
     #[serde(rename = "blog")]

@@ -22,15 +22,19 @@ impl UserData {
 
     async fn display(self) -> Result<(), reqwest::Error> {
         let mut fields: Vec<String> = Vec::new();
+        let title: String = format!("https://github.com/{}", self.profile_data.login.as_ref().unwrap());
+        let dashes: String = "-".repeat(title.len());
+        fields.append(&mut vec![title, dashes]);
+
         for (name, value) in FieldsIter::new(&self.profile_data)
             .chain(FieldsIter::new(&self.repo_data))
         {
             if let Some(value) = value.downcast_ref::<Option<String>>() {
                 if let Some(inner) = value.as_ref().filter(|v| !v.is_empty()) {
-                    fields.insert(fields.len(), format!("{}: {}", name.color("cyan"), inner));
+                    fields.insert(fields.len(), format!("{}: {}", name.color("red"), inner));
                 }
             } else if let Some(value) = value.downcast_ref::<i32>() {
-                fields.insert(fields.len(), format!("{}: {}", name.color("cyan"), value));
+                fields.insert(fields.len(), format!("{}: {}", name.color("red"), value));
             }
         }
 
@@ -40,17 +44,13 @@ impl UserData {
             println!("{}   {}", rows.remove(0), field)
         }
 
-        for row in rows {
-            println!("{}", row)
-        }
-
         Ok(())
     }
 }
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let user_data: UserData = UserData::new("widici").await?;
+    let user_data: UserData = UserData::new("ruby").await?;
     user_data.display().await.unwrap();
 
     Ok(())
