@@ -40,7 +40,7 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let user_data: UserData = UserData::new("widici").await?;
+    let user_data: UserData = UserData::new("color").await?;
     let _ = request_image(user_data.profile_data.id, 20*2 as u32).await.unwrap();
 
     println!("{}", user_data);

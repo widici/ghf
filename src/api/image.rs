@@ -3,7 +3,7 @@ use image::{GenericImageView};
 use image::imageops::FilterType;
 
 fn get_ascii(intensity: u8) -> &'static str {
-    let ascii: [&str; 8] = [" ", ".", ",", "-", "+", "=", "@", "#"];
+    let ascii: [&str; 8] = [" ", "-", "+", "=", "%", "&", "@", "#"];
     return ascii[(intensity/32) as usize]
 }
 
@@ -15,9 +15,12 @@ pub async fn request_image(id: i32, size: u32) -> Result<(), reqwest::Error> {
     let image = image::load_from_memory(&image_bytes).unwrap()
         .resize(size, size, FilterType::Nearest);
 
-    for y in (0..size).step_by(2) {
+    let (height, width) = image.dimensions();
+
+    let mut rows: Vec<String> = Vec::new();
+    for y in (0..height).step_by(2) {
         let mut row: Vec<String> = Vec::new();
-        for x in 0..size {
+        for x in 0..width {
             let pixel = image.get_pixel(x,y);
             let mut intensity = pixel[0]/3 + pixel[1]/3 + pixel[2]/3;
             if pixel[3] == 0 {
@@ -26,9 +29,10 @@ pub async fn request_image(id: i32, size: u32) -> Result<(), reqwest::Error> {
             let ascii = get_ascii(intensity).truecolor(pixel[0], pixel[1], pixel[2]);
             row.push(ascii.to_string());
         }
-        let joined = row.join("");
-        println!("{}", joined);
+        rows.insert(rows.len(), row.join(""));
     }
+
+    println!("{}", rows.join("\n"));
 
     Ok(())
 }
