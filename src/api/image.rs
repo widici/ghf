@@ -1,3 +1,4 @@
+use colored::Colorize;
 use image::{GenericImageView};
 use image::imageops::FilterType;
 
@@ -15,16 +16,18 @@ pub async fn request_image(id: i32, size: u32) -> Result<(), reqwest::Error> {
         .resize(size, size, FilterType::Nearest);
 
     for y in (0..size).step_by(2) {
-        let mut row: Vec<&'static str> = Vec::new();
+        let mut row: Vec<String> = Vec::new();
         for x in 0..size {
-            let pix = image.get_pixel(x,y);
-            let mut intensity = pix[0]/3 + pix[1]/3 + pix[2]/3;
-            if pix[3] == 0 {
+            let pixel = image.get_pixel(x,y);
+            let mut intensity = pixel[0]/3 + pixel[1]/3 + pixel[2]/3;
+            if pixel[3] == 0 {
                 intensity = 0;
             }
-            row.push(get_ascii(intensity));
+            let ascii = get_ascii(intensity).truecolor(pixel[0], pixel[1], pixel[2]);
+            row.push(ascii.to_string());
         }
-        println!("{}", row.join(""));
+        let joined = row.join("");
+        println!("{}", joined);
     }
 
     Ok(())
