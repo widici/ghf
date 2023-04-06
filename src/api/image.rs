@@ -2,7 +2,7 @@ use colored::Colorize;
 use image::{DynamicImage, GenericImageView};
 use image::imageops::FilterType;
 
-pub(crate) struct ImageData {
+pub struct ImageData {
     image: DynamicImage
 }
 
@@ -16,7 +16,7 @@ impl ImageData {
         return ImageData { image }
     }
 
-    pub fn get_ascii_art(&mut self, size: u32) -> Result<Vec<String>, reqwest::Error> {
+    pub fn get_ascii_art(&self, size: u32) -> Result<Vec<String>, reqwest::Error> {
         let image = self.image.resize(size*2, size*2, FilterType::Nearest);
 
         let (height, width) = image.dimensions();

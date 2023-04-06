@@ -9,6 +9,7 @@ use fields_iter::FieldsIter;
 struct UserData {
     profile_data: ProfileData,
     repo_data: RepoData,
+    image_data: ImageData,
 }
 
 
@@ -16,14 +17,15 @@ impl UserData {
     async fn new(username: &str) -> Result<UserData, reqwest::Error> {
         let profile_data= request_profile(username).await?;
         let repo_data = request_repos(username).await?;
+        let image_data = ImageData::new(profile_data.id).await;
 
-        return Ok( UserData { profile_data, repo_data } )
+        return Ok( UserData { profile_data, repo_data, image_data } )
     }
 
-    async fn display(self) -> Result<(), reqwest::Error> {
+    async fn display(&self) -> Result<(), reqwest::Error> {
         let mut fields: Vec<String> = Vec::new();
 
-        let title: String = format!("https://github.com/{}", self.profile_data.login.as_ref().unwrap());
+        let title: String = format!("https://github.com/{}", &self.profile_data.login.as_ref().unwrap());
         let dashes: String = "-".repeat(title.len());
         fields.append(&mut vec![title, dashes]);
 
@@ -39,7 +41,7 @@ impl UserData {
             }
         }
 
-        let mut rows = ImageData::new(self.profile_data.id).await.get_ascii_art(fields.len() as u32)?;
+        let mut rows = self.image_data.get_ascii_art(fields.len() as u32)?;
 
         for field in fields {
             println!("{}   {}", rows.remove(0), field)
