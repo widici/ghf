@@ -3,7 +3,7 @@ mod api;
 use colored::Colorize;
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
-use crate::api::image::request_image;
+use crate::api::image::{ImageData};
 use fields_iter::FieldsIter;
 
 struct UserData {
@@ -22,6 +22,7 @@ impl UserData {
 
     async fn display(self) -> Result<(), reqwest::Error> {
         let mut fields: Vec<String> = Vec::new();
+
         let title: String = format!("https://github.com/{}", self.profile_data.login.as_ref().unwrap());
         let dashes: String = "-".repeat(title.len());
         fields.append(&mut vec![title, dashes]);
@@ -38,7 +39,7 @@ impl UserData {
             }
         }
 
-        let mut rows = request_image(self.profile_data.id, fields.len() as u32).await.unwrap();
+        let mut rows = ImageData::new(self.profile_data.id).await.get_ascii_art(fields.len() as u32)?;
 
         for field in fields {
             println!("{}   {}", rows.remove(0), field)
