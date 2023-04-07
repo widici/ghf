@@ -7,13 +7,13 @@ pub struct ImageData {
 }
 
 impl ImageData {
-    pub async fn new(id: i32) -> ImageData {
+    pub async fn new(id: i32) -> Result<ImageData, reqwest::Error> {
         let endpoint = format!("https://avatars.githubusercontent.com/u/{}", id);
         let image_bytes = reqwest::get(&endpoint).await.unwrap()
             .bytes().await.unwrap();
 
         let image = image::load_from_memory(&image_bytes).unwrap();
-        return ImageData { image }
+        return Ok( ImageData { image } )
     }
 
     pub fn get_ascii_art(&self, size: u32) -> Result<Vec<String>, reqwest::Error> {

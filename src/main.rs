@@ -19,7 +19,7 @@ impl UserData {
     async fn new(username: &str) -> Result<UserData, reqwest::Error> {
         let profile_data= request_profile(username).await?;
         let repo_data = request_repos(username).await?;
-        let image_data = ImageData::new(profile_data.id).await;
+        let image_data = ImageData::new(profile_data.id).await?;
 
         return Ok( UserData { profile_data, repo_data, image_data } )
     }
