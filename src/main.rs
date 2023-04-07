@@ -1,9 +1,11 @@
 mod api;
+mod error;
 
 use colored::Colorize;
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
 use crate::api::image::{ImageData};
+use crate::error::handle_error;
 use fields_iter::FieldsIter;
 
 struct UserData {
@@ -53,7 +55,15 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let user_data: UserData = UserData::new("ruby").await?;
+    let username: &str = "imnotauserongithub";
+    let user_data: UserData = match UserData::new(username).await {
+        Ok(data) => data,
+        Err(..) => {
+            handle_error(username).await?;
+            std::process::exit(1);
+        }
+    };
+
     user_data.display().await.unwrap();
 
     Ok(())
