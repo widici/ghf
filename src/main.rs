@@ -58,7 +58,7 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let username: &str = "james";
+    let username: &str = "ruby";
     let user_data: UserData = match UserData::new(username).await {
         Ok(data) => data,
         Err(..) => {

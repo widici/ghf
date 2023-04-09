@@ -23,17 +23,12 @@ impl ImageData {
         for pixel in self.image.pixels().step_by(10) {
             let (_, _, Rgba([r, g, b, _])) = pixel;
 
-            if ![(255, 255, 255), (240, 240, 240), (0, 0, 0)].contains(&(r, g, b)) {
+            if !(r >= 240 && g >= 240 && b >= 240) && !(r <= 20 && g <= 40 && b <= 20) {
                 amount += 1;
                 rgb = (rgb.0 + u32::from(r), rgb.1 + u32::from(g), rgb.2 + u32::from(b));
             }
         }
-
-        let average_rgb = (
-            (rgb.0 / amount) as u8,
-            (rgb.1 / amount) as u8,
-            (rgb.2 / amount) as u8,
-        );
+        let average_rgb = ((rgb.0 / amount) as u8, (rgb.1 / amount) as u8, (rgb.2 / amount) as u8);
 
         return average_rgb;
     }
