@@ -12,6 +12,7 @@ struct UserData {
     profile_data: ProfileData,
     repo_data: RepoData,
     image_data: ImageData,
+    color: (u8, u8, u8)
 }
 
 
@@ -20,12 +21,14 @@ impl UserData {
         let profile_data= request_profile(username).await?;
         let repo_data = request_repos(username).await?;
         let image_data = ImageData::new(profile_data.id).await?;
+        let color: (u8, u8, u8) = image_data.average_color();
 
-        return Ok( UserData { profile_data, repo_data, image_data } )
+        return Ok( UserData { profile_data, repo_data, image_data, color } )
     }
 
     async fn display(&self) -> Result<(), reqwest::Error> {
         let mut fields: Vec<String> = Vec::new();
+        let color = self.color;
 
         let title: String = format!("https://github.com/{}", &self.profile_data.login.as_ref().unwrap());
         let dashes: String = "-".repeat(title.len());
@@ -36,10 +39,10 @@ impl UserData {
         {
             if let Some(value) = value.downcast_ref::<Option<String>>() {
                 if let Some(inner) = value.as_ref().filter(|v| !v.is_empty()) {
-                    fields.insert(fields.len(), format!("{}: {}", name.color("red"), inner));
+                    fields.insert(fields.len(), format!("{}: {}", name.truecolor(color.0, color.1, color.2), inner));
                 }
             } else if let Some(value) = value.downcast_ref::<i32>() {
-                fields.insert(fields.len(), format!("{}: {}", name.color("red"), value));
+                fields.insert(fields.len(), format!("{}: {}", name.truecolor(color.0, color.1, color.2), value));
             }
         }
 
@@ -55,7 +58,7 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let username: &str = "imnotauserongithub";
+    let username: &str = "james";
     let user_data: UserData = match UserData::new(username).await {
         Ok(data) => data,
         Err(..) => {

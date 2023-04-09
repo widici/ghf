@@ -1,5 +1,5 @@
 use colored::Colorize;
-use image::{DynamicImage, GenericImageView};
+use image::{DynamicImage, GenericImageView, Rgba};
 use image::imageops::FilterType;
 
 pub struct ImageData {
@@ -13,7 +13,29 @@ impl ImageData {
             .bytes().await.unwrap();
 
         let image = image::load_from_memory(&image_bytes).unwrap();
-        return Ok( ImageData { image } )
+        return Ok ( ImageData { image } )
+    }
+
+    pub fn average_color(&self) -> (u8, u8, u8) {
+        let mut rgb = (0, 0, 0);
+        let mut amount = 0;
+
+        for pixel in self.image.pixels().step_by(10) {
+            let (_, _, Rgba([r, g, b, _])) = pixel;
+
+            if ![(255, 255, 255), (240, 240, 240), (0, 0, 0)].contains(&(r, g, b)) {
+                amount += 1;
+                rgb = (rgb.0 + u32::from(r), rgb.1 + u32::from(g), rgb.2 + u32::from(b));
+            }
+        }
+
+        let average_rgb = (
+            (rgb.0 / amount) as u8,
+            (rgb.1 / amount) as u8,
+            (rgb.2 / amount) as u8,
+        );
+
+        return average_rgb;
     }
 
     pub fn get_ascii_art(&self, size: u32) -> Result<Vec<String>, reqwest::Error> {
