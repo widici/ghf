@@ -7,6 +7,7 @@ use crate::api::repo::{RepoData, request_repos};
 use crate::api::image::{ImageData};
 use crate::error::handle_error;
 use fields_iter::FieldsIter;
+use std::env;
 
 struct UserData {
     profile_data: ProfileData,
@@ -59,7 +60,8 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let username: &str = "widici";
+    let args: Vec<String> = env::args().collect();
+    let username: &str = &args[1];
     let user_data: UserData = match UserData::new(username).await {
         Ok(data) => data,
         Err(..) => {
