@@ -39,6 +39,7 @@ impl UserData {
         {
             if let Some(value) = value.downcast_ref::<Option<String>>() {
                 if let Some(inner) = value.as_ref().filter(|v| !v.is_empty()) {
+                    let inner = inner.replace("\n", " ").replace("\r", " ");
                     fields.insert(fields.len(), format!("{}: {}", name.truecolor(color.0, color.1, color.2), inner));
                 }
             } else if let Some(value) = value.downcast_ref::<i32>() {
@@ -58,7 +59,7 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let username: &str = "ruby";
+    let username: &str = "widici";
     let user_data: UserData = match UserData::new(username).await {
         Ok(data) => data,
         Err(..) => {
