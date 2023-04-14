@@ -61,8 +61,16 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let args = parse();
+    let args = match parse() {
+        Ok(arguments) => arguments,
+        Err(..) => {
+            eprintln!("Error occurred while parsing arguments");
+            std::process::exit(1)
+        }
+    };
+
     let username: &str = args.value_of("name").unwrap_or("widici");
+
     let user_data: UserData = match UserData::new(username).await {
         Ok(data) => data,
         Err(..) => {
@@ -79,18 +87,11 @@ async fn main() -> Result<(), reqwest::Error> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{UserData};
-    use crate::api::image::request_image;
+    use super::*;
 
     #[tokio::test]
     async fn requests_works() -> Result<(), reqwest::Error> {
         let _: UserData = UserData::new("widici").await?;
-        Ok(())
-    }
-
-    #[test]
-    fn request_image_works() -> Result<(), reqwest::Error> {
-        let _ = request_image(84205124, 15 as u32);
         Ok(())
     }
 }

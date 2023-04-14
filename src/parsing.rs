@@ -1,7 +1,8 @@
 use clap::{App, Arg, ArgMatches};
 
-pub fn parse() -> ArgMatches {
-    return App::new("ghfetch")
+pub fn parse() -> Result<ArgMatches, clap::Error> {
+    return Ok (
+        App::new("ghfetch")
         .version("1.0")
         .author("widici")
         .about("Cli program that fetches and displays Github users data")
@@ -19,5 +20,6 @@ pub fn parse() -> ArgMatches {
                 .long("color")
                 .short('c'),
         )
-        .get_matches();
+        .get_matches()
+    )
 }
