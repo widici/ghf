@@ -1,13 +1,14 @@
 mod api;
 mod error;
+mod parsing;
 
 use colored::Colorize;
+use fields_iter::FieldsIter;
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
 use crate::api::image::{ImageData};
 use crate::error::handle_error;
-use fields_iter::FieldsIter;
-use std::env;
+use crate::parsing::parse;
 
 struct UserData {
     profile_data: ProfileData,
@@ -60,8 +61,8 @@ impl UserData {
 
 #[tokio::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let args: Vec<String> = env::args().collect();
-    let username: &str = &args[1];
+    let args = parse();
+    let username: &str = args.value_of("name").unwrap_or("widici");
     let user_data: UserData = match UserData::new(username).await {
         Ok(data) => data,
         Err(..) => {
