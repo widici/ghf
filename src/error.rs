@@ -13,7 +13,7 @@ pub async fn handle_error(username: &str) -> Result<(), reqwest::Error> {
                 eprintln!("{}", serde_json::to_string(message).unwrap().trim_matches('"'))
             }
         } else {
-            eprintln!("Unexpected error")
+            eprintln!("Unexpected error occurred")
         }
     }
 

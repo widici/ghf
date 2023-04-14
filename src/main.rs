@@ -2,7 +2,7 @@ mod api;
 mod error;
 mod parsing;
 
-use colored::Colorize;
+use colored::{ColoredString, Colorize};
 use fields_iter::FieldsIter;
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
@@ -14,23 +14,22 @@ struct UserData {
     profile_data: ProfileData,
     repo_data: RepoData,
     image_data: ImageData,
-    color: (u8, u8, u8)
+    average_color: (u8, u8, u8),
+    selected_color: Option<String>
 }
 
-
 impl UserData {
-    async fn new(username: &str) -> Result<UserData, reqwest::Error> {
+    async fn new(username: &str, selected_color: Option<String>) -> Result<UserData, reqwest::Error> {
         let profile_data= request_profile(username).await?;
         let repo_data = request_repos(username).await?;
         let image_data = ImageData::new(profile_data.id).await?;
-        let color: (u8, u8, u8) = image_data.average_color();
+        let average_color: (u8, u8, u8) = image_data.average_color();
 
-        return Ok( UserData { profile_data, repo_data, image_data, color } )
+        return Ok( UserData { profile_data, repo_data, image_data, average_color, selected_color} )
     }
 
     async fn display(&self) -> Result<(), reqwest::Error> {
         let mut fields: Vec<String> = Vec::new();
-        let color = self.color;
 
         let title: String = format!("https://github.com/{}", &self.profile_data.login.as_ref().unwrap());
         let dashes: String = "-".repeat(title.len());
@@ -42,10 +41,10 @@ impl UserData {
             if let Some(value) = value.downcast_ref::<Option<String>>() {
                 if let Some(inner) = value.as_ref().filter(|v| !v.is_empty()) {
                     let inner = inner.replace("\n", " ").replace("\r", " ");
-                    fields.insert(fields.len(), format!("{}: {}", name.truecolor(color.0, color.1, color.2), inner));
+                    fields.insert(fields.len(), format!("{}: {}", &self.color(name), inner));
                 }
             } else if let Some(value) = value.downcast_ref::<i32>() {
-                fields.insert(fields.len(), format!("{}: {}", name.truecolor(color.0, color.1, color.2), value));
+                fields.insert(fields.len(), format!("{}: {}", &self.color(name), value));
             }
         }
 
@@ -57,6 +56,18 @@ impl UserData {
 
         Ok(())
     }
+
+    fn color(&self, string: &str) -> ColoredString {
+        return match &self.selected_color {
+            None => {
+                let rgb: &(u8, u8, u8) = &self.average_color;
+                string.truecolor(rgb.0, rgb.1, rgb.2)
+            }
+            Some(selected_color) => {
+                string.color(&**selected_color)
+            }
+        }
+    }
 }
 
 #[tokio::main]
@@ -64,17 +75,18 @@ async fn main() -> Result<(), reqwest::Error> {
     let args = match parse() {
         Ok(arguments) => arguments,
         Err(..) => {
-            eprintln!("Error occurred while parsing arguments");
+            eprintln!("Unexpected error occurred while parsing arguments");
             std::process::exit(1)
         }
     };
 
-    let username: &str = args.value_of("name").unwrap_or("widici");
+    let username: String = args.value_of("name").unwrap_or("widici").to_string();
+    let color = args.value_of("color").map(|s|{ s.to_owned() });
 
-    let user_data: UserData = match UserData::new(username).await {
+    let user_data: UserData = match UserData::new(&username, color).await {
         Ok(data) => data,
         Err(..) => {
-            handle_error(username).await?;
+            handle_error(&username).await?;
             std::process::exit(1);
         }
     };
@@ -91,7 +103,7 @@ mod tests {
 
     #[tokio::test]
     async fn requests_works() -> Result<(), reqwest::Error> {
-        let _: UserData = UserData::new("widici").await?;
+        let _: UserData = UserData::new("widici", None).await?;
         Ok(())
     }
 }
