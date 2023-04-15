@@ -13,5 +13,4 @@ tokio = { version = "1.27.0", features = ["full"] }
 fields-iter = "0.0.3"
 colored = "2.0.0"
 image = "0.24.6"
-clap = "3.0.0"
-
+clap = { version = "4.2.2", features = ["cargo"] }

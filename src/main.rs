@@ -80,13 +80,13 @@ async fn main() -> Result<(), reqwest::Error> {
         }
     };
 
-    let username: String = args.value_of("name").unwrap_or("widici").to_string();
-    let color = args.value_of("color").map(|s|{ s.to_owned() });
+    let username: &String = args.get_one::<String>("name").unwrap();
+    let color = args.get_one::<String>("color").map(|s|{ s.to_owned() });
 
-    let user_data: UserData = match UserData::new(&username, color).await {
+    let user_data: UserData = match UserData::new(&*username, color).await {
         Ok(data) => data,
         Err(..) => {
-            handle_error(&username).await?;
+            handle_error(&*username).await?;
             std::process::exit(1);
         }
     };

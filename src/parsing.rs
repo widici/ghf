@@ -1,11 +1,7 @@
-use clap::{App, Arg, ArgMatches};
+use clap::{command, Arg, ArgMatches};
 
 pub fn parse() -> Result<ArgMatches, clap::Error> {
-    return Ok (
-        App::new("ghfetch")
-        .version("1.0")
-        .author("widici")
-        .about("Cli program that fetches and displays Github users data")
+    let args = command!()
         .arg(
             Arg::new("name")
                 .help("Username of the Github user")
@@ -20,6 +16,7 @@ pub fn parse() -> Result<ArgMatches, clap::Error> {
                 .long("color")
                 .short('c'),
         )
-        .get_matches()
-    )
+        .get_matches();
+
+    return Ok ( args )
 }
