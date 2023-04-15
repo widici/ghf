@@ -12,6 +12,7 @@ pub fn parse() -> Result<ArgMatches, clap::Error> {
             Arg::new("color")
                 .help("Optional color of the text of the fetched data")
                 .required(false)
+                .value_parser(["black", "red", "green", "yellow", "blue", "magenta", "purple", "cyan", "white"])
                 .value_name("COLOR")
                 .long("color")
                 .short('c'),
