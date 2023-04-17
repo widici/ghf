@@ -21,16 +21,19 @@ impl ImageData {
         let mut amount = 0;
 
         for pixel in self.image.pixels().step_by(10) {
-            let (_, _, Rgba([r, g, b, _])) = pixel;
+            let (_, _, Rgba([r, g, b, a])) = pixel;
 
-            if !(r >= 240 && g >= 240 && b >= 240) && !(r <= 20 && g <= 40 && b <= 20) {
+            if !(r >= 240 && g >= 240 && b >= 240) && !(r <= 20 && g <= 40 && b <= 20) && (a != 0) {
                 amount += 1;
                 rgb = (rgb.0 + u32::from(r), rgb.1 + u32::from(g), rgb.2 + u32::from(b));
             }
         }
-        let average_rgb = ((rgb.0 / amount) as u8, (rgb.1 / amount) as u8, (rgb.2 / amount) as u8);
-
-        return average_rgb;
+        return if amount > 0 {
+            let average_rgb = ((rgb.0 / amount) as u8, (rgb.1 / amount) as u8, (rgb.2 / amount) as u8);
+            average_rgb
+        } else {
+            (255, 255, 255)
+        }
     }
 
     pub fn get_ascii_art(&self, size: u32) -> Result<Vec<String>, reqwest::Error> {
@@ -50,6 +53,7 @@ impl ImageData {
                 let ascii = get_ascii(intensity).truecolor(pixel[0], pixel[1], pixel[2]);
                 row.push(ascii.to_string());
             }
+            let _ = rows.truncate(height as usize);
             rows.insert(rows.len(), row.join(""));
         }
 
