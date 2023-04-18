@@ -1,6 +1,6 @@
 use reqwest::header::USER_AGENT;
 
-pub async fn handle_error(username: &str) -> Result<(), reqwest::Error> {
+pub async fn handle_error(username: &str) -> Result<(), Box<dyn std::error::Error>> {
     let result = reqwest::Client::new()
         .get(&format!("https://api.github.com/users/{}", username))
         .header(USER_AGENT, "ghfetch")

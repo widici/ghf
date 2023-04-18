@@ -11,7 +11,7 @@ pub struct RepoData {
     pub languages: Option<String>,
 }
 
-pub async fn request_repos(username: &str) -> Result<RepoData, reqwest::Error> {
+pub async fn request_repos(username: &str) -> Result<RepoData, Box<dyn std::error::Error>> {
     let repos: Vec<RepoData> = reqwest::Client::new()
         .get(&format!("https://api.github.com/users/{}/repos", username))
         .header(USER_AGENT, "ghfetch")

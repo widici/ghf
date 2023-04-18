@@ -1,6 +1,6 @@
 use clap::{command, Arg, ArgMatches};
 
-pub fn parse() -> Result<ArgMatches, clap::Error> {
+pub fn parse() -> Result<ArgMatches, Box<dyn std::error::Error>> {
     let args = command!()
         .arg(
             Arg::new("name")

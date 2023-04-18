@@ -23,7 +23,7 @@ pub struct ProfileData {
     pub id: i32,
 }
 
-pub async fn request_profile(username: &str) -> Result<ProfileData, reqwest::Error> {
+pub async fn request_profile(username: &str) -> Result<ProfileData, Box<dyn std::error::Error>> {
     let result: ProfileData = reqwest::Client::new()
         .get(&format!("https://api.github.com/users/{}", username))
         .header(USER_AGENT, "ghfetch")

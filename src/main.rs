@@ -19,7 +19,7 @@ struct UserData {
 }
 
 impl UserData {
-    async fn new(username: &str, selected_color: Option<String>) -> Result<UserData, reqwest::Error> {
+    async fn new(username: &str, selected_color: Option<String>) -> Result<UserData, Box<dyn std::error::Error>> {
         let profile_data= request_profile(username).await?;
         let repo_data = request_repos(username).await?;
         let image_data = ImageData::new(profile_data.id).await?;
@@ -28,7 +28,7 @@ impl UserData {
         return Ok( UserData { profile_data, repo_data, image_data, average_color, selected_color} )
     }
 
-    async fn display(&self) -> Result<(), reqwest::Error> {
+    async fn display(&self) -> Result<(), Box<dyn std::error::Error>> {
         let mut fields: Vec<String> = Vec::new();
 
         let title: String = format!("https://github.com/{}", &self.profile_data.login.as_ref().unwrap());
@@ -71,7 +71,7 @@ impl UserData {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), reqwest::Error> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = match parse() {
         Ok(arguments) => arguments,
         Err(..) => {
@@ -102,7 +102,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn requests_works() -> Result<(), reqwest::Error> {
+    async fn requests_works() -> Result<(), Box<dyn std::error::Error>> {
         let _: UserData = UserData::new("widici", None).await?;
         Ok(())
     }
