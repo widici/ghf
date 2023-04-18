@@ -1,6 +1,11 @@
 use reqwest::header::USER_AGENT;
 
-pub async fn handle_error(error: Box<dyn std::error::Error>, username: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub struct Error {
+    pub description: &'static str,
+    pub solution: Option<&'static str>,
+}
+
+pub async fn get_error(error: Box<dyn std::error::Error>, username: &str) -> Result<Error, Box<dyn std::error::Error>> {
     if let Some(_) = error.downcast_ref::<reqwest::Error>() {
         let result = reqwest::Client::new()
             .get(&format!("https://api.github.com/users/{}", username))
@@ -9,24 +14,25 @@ pub async fn handle_error(error: Box<dyn std::error::Error>, username: &str) -> 
             .await?;
 
         if !result.status().is_success() {
-            if let Ok(json) = result.json::<serde_json::Value>().await {
+            return if let Ok(json) = result.json::<serde_json::Value>().await {
                 if let Some(message) = json.get("message") {
-                    eprintln!("{}", serde_json::to_string(message).unwrap().trim_matches('"'))
+                    let description = {
+                        let temp = String::from(serde_json::to_string(message).unwrap().trim_matches('"'));
+                        Box::leak(temp.into_boxed_str())
+                    };
+                    Ok( Error { description, solution: None } )
+                } else {
+                    Ok( Error { description: "Unexpected error occurred", solution: None } )
                 }
             } else {
-                eprintln!("Unexpected error occurred")
+                Ok( Error { description: "Unexpected error occurred", solution: None } )
             }
         }
     } else if let Some(_) = error.downcast_ref::<image::ImageError>() {
-        eprintln!("An error occurred while processing the Github avatar")
+        return Ok( Error { description: "An error occurred while processing the Github avatar", solution: None } );
     } else if let Some(_) = error.downcast_ref::<serde_json::Error>() {
-        eprintln!("An error occurred when deserializing the user data")
-    } else {
-        eprintln!("Unexpected error occurred")
+        return Ok( Error { description: "An error occurred when deserializing the user data", solution: None } );
     }
 
-    // An error occurred while parsing the user's data.
-    // Check if the user's name is correct.
-
-    Ok(())
+    return Ok( Error { description: "Unexpected error occurred", solution: None } );
 }

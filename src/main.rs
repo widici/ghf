@@ -7,7 +7,7 @@ use fields_iter::FieldsIter;
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
 use crate::api::image::{ImageData};
-use crate::error::handle_error;
+use crate::error::{get_error};
 use crate::parsing::parse;
 
 struct UserData {
@@ -86,7 +86,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_data: UserData = match UserData::new(&*username, color).await {
         Ok(data) => data,
         Err(error) => {
-            handle_error(error, &*username).await?;
+            let error_obj = get_error(error, &*username).await?;
+            println!("{} {:?}", error_obj.description, error_obj.solution);
             std::process::exit(1);
         }
     };
