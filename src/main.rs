@@ -85,8 +85,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let user_data: UserData = match UserData::new(&*username, color).await {
         Ok(data) => data,
-        Err(..) => {
-            handle_error(&*username).await?;
+        Err(error) => {
+            handle_error(error, &*username).await?;
             std::process::exit(1);
         }
     };
