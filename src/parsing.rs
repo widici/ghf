@@ -19,5 +19,5 @@ pub fn parse() -> Result<ArgMatches, Box<dyn std::error::Error>> {
         )
         .get_matches();
 
-    return Ok ( args )
+    return Ok(args)
 }
