@@ -1,12 +1,13 @@
 use std::fmt::{Display, Formatter};
 use reqwest::header::USER_AGENT;
 
-pub struct Error {
-    pub description: &'static str,
-    pub solution: Option<&'static str>,
+pub struct Error<'a> {
+    pub description: &'a str,
+    pub solution: Option<&'a str>,
 }
 
-impl Display for Error {
+
+impl<'a> Display for Error<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "{}", &self.description)?;
         if let Some(solution) = self.solution {
@@ -17,13 +18,13 @@ impl Display for Error {
     }
 }
 
-impl Error {
-    pub fn new(description: &'static str, solution: Option<&'static str>) -> Error {
+impl<'a> Error<'a> {
+    pub fn new(description: &'a str, solution: Option<&'a str>) -> Error<'a> {
         Error { description, solution }
     }
 }
 
-pub async fn get_error(e: Box<dyn std::error::Error>, username: &str) -> Result<Error, Box<dyn std::error::Error>> {
+pub async fn get_error(e: Box<dyn std::error::Error>, username: &str) -> Result<Error<'_>, Box<dyn std::error::Error>> {
     return match e.downcast_ref::<reqwest::Error>() {
         Some(_error) => {
             let result = reqwest::Client::new()
@@ -39,15 +40,17 @@ pub async fn get_error(e: Box<dyn std::error::Error>, username: &str) -> Result<
                             let temp = String::from(serde_json::to_string(message).unwrap().trim_matches('"'));
                             Box::leak(temp.into_boxed_str())
                         };
-                        Ok(Error { description, solution: None })
+                        Ok(Error::new(description, None))
                     } else {
-                        Ok(Error::new("Unexpected error occurred", None))
-                    }
+                        Ok(Error::new("Unexpected error occurred", None)) }
                 } else {
-                    Ok(Error::new("Unexpected error occurred", None))
-                }
+                    Ok(Error::new("Unexpected error occurred", None)) }
             } else {
-                Ok(Error::new("An unexpected error occurred", None))
+                let description = {
+                    let temp = String::from(&format!("HTTP error occurred: {}", result.status()));
+                    Box::leak(temp.into_boxed_str())
+                };
+                Ok(Error::new(description, None))
             }
         },
         None => {
