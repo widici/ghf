@@ -31,7 +31,14 @@ pub async fn get_error(e: Box<dyn std::error::Error>, username: &str) -> Result<
                 .get(&format!("https://api.github.com/users/{}", username))
                 .header(USER_AGENT, "ghfetch")
                 .send()
-                .await?;
+                .await;
+
+            let result = match result {
+                Ok(res) => res,
+                Err(_) => {
+                    return Ok(Error::new("Failed to handle request error", Some("Try checking your internet connection")))
+                }
+            };
 
             if !result.status().is_success() {
                 if let Ok(json) = result.json::<serde_json::Value>().await {
