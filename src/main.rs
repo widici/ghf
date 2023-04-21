@@ -87,7 +87,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(data) => data,
         Err(error) => {
             let error_obj = get_error(error, &*username).await?;
-            println!("{}", error_obj);
+            eprintln!("{}", error_obj);
             std::process::exit(1);
         }
     };
@@ -95,7 +95,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     user_data.display().await.unwrap();
 
     Ok(())
-
 }
 
 #[cfg(test)]

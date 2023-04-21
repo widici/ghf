@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 use reqwest::header::USER_AGENT;
+use colored::Colorize;
 
 pub struct Error<'a> {
     pub description: &'a str,
@@ -9,9 +10,9 @@ pub struct Error<'a> {
 
 impl<'a> Display for Error<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{}", &self.description)?;
+        writeln!(f, "{}", &self.description.color("red"))?;
         if let Some(solution) = self.solution {
-            writeln!(f, "{}", solution)?;
+            writeln!(f, "{}", solution.color("red"))?;
         }
 
         Ok(())
@@ -40,26 +41,36 @@ pub async fn get_error(e: Box<dyn std::error::Error>, username: &str) -> Result<
                 }
             };
 
-            if !result.status().is_success() {
-                if let Ok(json) = result.json::<serde_json::Value>().await {
-                    if let Some(message) = json.get("message") {
-                        let description = {
-                            let temp = String::from(serde_json::to_string(message).unwrap().trim_matches('"'));
-                            Box::leak(temp.into_boxed_str())
-                        };
-                        Ok(Error::new(description, None))
-                    } else {
-                        Ok(Error::new("Unexpected error occurred", None)) }
-                } else {
-                    Ok(Error::new("Unexpected error occurred", None)) }
-            } else {
+            if result.status().is_success() {
                 let description = {
                     let temp = String::from(&format!("HTTP error occurred: {}", result.status()));
                     Box::leak(temp.into_boxed_str())
                 };
-                Ok(Error::new(description, None))
+                return Ok(Error::new(description, None));
             }
+
+            let json = match result.json::<serde_json::Value>().await {
+                Ok(json) => json,
+                Err(_) => {
+                    return Ok(Error::new("Unexpected error occurred", None))
+                }
+            };
+
+            let message = match json.get("message") {
+                Some(message) => message,
+                None => {
+                    return Ok(Error::new("Unexpected error occurred", None))
+                }
+            };
+
+
+            let description = {
+                let temp = String::from(serde_json::to_string(message).unwrap().trim_matches('"'));
+                Box::leak(temp.into_boxed_str())
+            };
+            Ok(Error::new(description, None))
         },
+
         None => {
             if e.is::<serde_json::Error>() {
                 Ok(Error::new("An error occurred when deserializing the user data", None))
