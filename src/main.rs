@@ -1,13 +1,13 @@
 mod api;
-mod error;
 mod parsing;
+mod error;
 
 use colored::{ColoredString, Colorize};
 use fields_iter::FieldsIter;
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
 use crate::api::image::{ImageData};
-use crate::error::{get_error};
+use crate::error::error::{get_error};
 use crate::parsing::parse;
 
 struct UserData {
