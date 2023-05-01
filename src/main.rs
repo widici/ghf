@@ -106,4 +106,11 @@ mod tests {
         let _: UserData = UserData::new("widici", None).await?;
         Ok(())
     }
+
+    #[tokio::test]
+    async fn reqwest_error() {
+        let error = Box::new(reqwest::get("https://nonexistenturl.com").await.unwrap_err());
+        let result = get_error(error, "widici").await;
+        assert!(result.is_ok());
+    }
 }
