@@ -30,7 +30,7 @@ pub async fn request_repos(username: &str) -> Result<RepoData, Box<dyn std::erro
             languages_vec.push(repo.languages.as_ref().unwrap().to_string())
         }
     }
-    let languages_vec: String = languages_vec.join(", ");
+    let languages: Option<String> = Some(languages_vec.join(", "));
 
-    return Ok( RepoData { languages: Some(languages_vec), forks: sum_forks, stars: sum_stars } )
+    return Ok( RepoData { languages, forks: sum_forks, stars: sum_stars } )
 }

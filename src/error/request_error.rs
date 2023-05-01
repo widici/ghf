@@ -64,9 +64,9 @@ pub async fn get_request_error(username: &str) -> Result<Error<'_>, Box<dyn std:
 
 fn handle_rate_limit(reset: u64) -> Result<Error<'static>, Box<dyn std::error::Error>> {
     let ratelimit_reset= UNIX_EPOCH + Duration::from_secs(reset);
-    let time_to_reset = ratelimit_reset.duration_since(SystemTime::now())?.as_secs();
+    let delay = ratelimit_reset.duration_since(SystemTime::now())?.as_secs();
     let solution = {
-        let temp = String::from(format!("Try again in {}", time_to_reset));
+        let temp = String::from(format!("Try again in {} minutes & {} seconds", delay/60, delay%60));
         Box::leak(temp.into_boxed_str())
     };
     return Ok(Error::new("Ratelimit exceeded", Some(solution)))
