@@ -103,14 +103,14 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn requests_works() -> Result<()> {
-        let _: UserData = UserData::new("widici", None).await?;
-        Ok(())
+    async fn requests_works() {
+        let result = UserData::new("widici", None).await;
+        assert!(result.is_ok());
     }
 
     #[tokio::test]
     async fn reqwest_error() {
-        let error = Box::new(reqwest::get("https://nonexistenturl.com").await.unwrap_err());
+        let error = anyhow::Error::new(reqwest::get("https://nonexistenturl.com").await.unwrap_err());
         let result = get_error(error, "widici").await;
         assert!(result.is_ok());
     }
