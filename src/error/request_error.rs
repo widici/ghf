@@ -2,8 +2,9 @@ use crate::error::error;
 use error::Error;
 use reqwest::header::USER_AGENT;
 use std::time::{SystemTime, UNIX_EPOCH, Duration};
+use anyhow::Result;
 
-pub async fn get_request_error(username: &str) -> Result<Error<'_>, Box<dyn std::error::Error>> {
+pub async fn get_request_error(username: &str) -> Result<Error<'_>> {
     let response = reqwest::Client::new()
         .get(&format!("https://api.github.com/users/{}", username))
         .header(USER_AGENT, "ghfetch")
@@ -62,7 +63,7 @@ pub async fn get_request_error(username: &str) -> Result<Error<'_>, Box<dyn std:
     Ok(Error::new(message, None))
 }
 
-fn handle_rate_limit(reset: u64) -> Result<Error<'static>, Box<dyn std::error::Error>> {
+fn handle_rate_limit(reset: u64) -> Result<Error<'static>> {
     let ratelimit_reset= UNIX_EPOCH + Duration::from_secs(reset);
     let delay = ratelimit_reset.duration_since(SystemTime::now())?.as_secs();
     let solution = {

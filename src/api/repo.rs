@@ -1,5 +1,6 @@
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
+use anyhow::Result;
 
 #[derive(Serialize, Deserialize, fields_iter::FieldsInspect, Debug)]
 pub struct RepoData {
@@ -11,7 +12,7 @@ pub struct RepoData {
     pub languages: Option<String>,
 }
 
-pub async fn request_repos(username: &str) -> Result<RepoData, Box<dyn std::error::Error>> {
+pub async fn request_repos(username: &str) -> Result<RepoData> {
     let repos: Vec<RepoData> = reqwest::Client::new()
         .get(&format!("https://api.github.com/users/{}/repos", username))
         .header(USER_AGENT, "ghfetch")

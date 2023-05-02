@@ -4,6 +4,7 @@ mod error;
 
 use colored::{ColoredString, Colorize};
 use fields_iter::FieldsIter;
+use anyhow::Result;
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
 use crate::api::image::{ImageData};
@@ -19,7 +20,7 @@ struct UserData {
 }
 
 impl UserData {
-    async fn new(username: &str, selected_color: Option<String>) -> Result<UserData, Box<dyn std::error::Error>> {
+    async fn new(username: &str, selected_color: Option<String>) -> Result<UserData> {
         let profile_data= request_profile(username).await?;
         let repo_data = request_repos(username).await?;
         let image_data = ImageData::new(profile_data.id).await?;
@@ -28,7 +29,7 @@ impl UserData {
         return Ok( UserData { profile_data, repo_data, image_data, average_color, selected_color} )
     }
 
-    async fn display(&self) -> Result<(), Box<dyn std::error::Error>> {
+    async fn display(&self) -> Result<()> {
         let mut fields: Vec<String> = Vec::new();
 
         let title: String = format!("https://github.com/{}", &self.profile_data.login.as_ref().unwrap());
@@ -71,7 +72,7 @@ impl UserData {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<()> {
     let args = match parse() {
         Ok(arguments) => arguments,
         Err(..) => {
@@ -102,7 +103,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn requests_works() -> Result<(), Box<dyn std::error::Error>> {
+    async fn requests_works() -> Result<()> {
         let _: UserData = UserData::new("widici", None).await?;
         Ok(())
     }

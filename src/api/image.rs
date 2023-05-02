@@ -1,13 +1,14 @@
 use colored::Colorize;
 use image::{DynamicImage, GenericImageView, Rgba};
 use image::imageops::FilterType;
+use anyhow::Result;
 
 pub struct ImageData {
     image: DynamicImage
 }
 
 impl ImageData {
-    pub async fn new(id: i32) -> Result<ImageData, Box<dyn std::error::Error>> {
+    pub async fn new(id: i32) -> Result<ImageData> {
         let endpoint = format!("https://avatars.githubusercontent.com/u/{}", id);
         let image_bytes = reqwest::get(&endpoint).await.unwrap()
             .bytes().await.unwrap();
@@ -36,7 +37,7 @@ impl ImageData {
         }
     }
 
-    pub fn get_ascii_art(&self, size: u32) -> Result<Vec<String>, reqwest::Error> {
+    pub fn get_ascii_art(&self, size: u32) -> Result<Vec<String>> {
         let image = self.image.resize(size*2, size*2, FilterType::Nearest);
 
         let (height, width) = image.dimensions();

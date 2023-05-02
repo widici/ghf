@@ -3,12 +3,12 @@ use request_error::get_request_error;
 
 use std::fmt::{Display, Formatter};
 use colored::Colorize;
+use anyhow::Result;
 
 pub struct Error<'a> {
     pub description: &'a str,
     pub solution: Option<&'a str>,
 }
-
 
 impl<'a> Display for Error<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -27,7 +27,7 @@ impl<'a> Error<'a> {
     }
 }
 
-pub async fn get_error(e: Box<dyn std::error::Error>, username: &str) -> Result<Error<'_>, Box<dyn std::error::Error>> {
+pub async fn get_error(e: anyhow::Error, username: &str) -> Result<Error<'_>> {
     return if e.is::<reqwest::Error>() {
         get_request_error(username).await
     } else if e.is::<serde_json::Error>() {
