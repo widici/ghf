@@ -1,2 +1,2 @@
 pub mod error;
-mod request_error;
+pub mod request_error;

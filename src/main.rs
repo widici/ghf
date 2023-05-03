@@ -100,7 +100,9 @@ async fn main() -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use std::time::{SystemTime, UNIX_EPOCH};
     use super::*;
+    use error::request_error::handle_rate_limit;
 
     #[tokio::test]
     async fn requests_works() {
@@ -109,9 +111,30 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn reqwest_error() {
+    async fn reqwest_error_test() {
         let error = anyhow::Error::new(reqwest::get("https://nonexistenturl.com").await.unwrap_err());
         let result = get_error(error, "widici").await;
         assert!(result.is_ok());
     }
+
+    #[test]
+    fn handle_rate_limit_test() {
+        let reset = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() + 30;
+        let result = handle_rate_limit(reset).unwrap();
+        let seconds = (result.solution.unwrap().split(" ").collect::<Vec<&str>>()[6]
+            .parse::<f32>().unwrap()/10.0).round()*10.0;
+
+        assert_eq!(result.description, "Ratelimit exceeded");
+        assert!(result.solution.unwrap().starts_with("Try again in 0 minutes &"));
+        assert_eq!(seconds, 30 as f32)
+    }
+
+    /*
+    #[tokio::test]
+    async fn serde_error() {
+        let error = anyhow::Error::new(serde_json::from_str("Invalid json"));
+        let result = get_error(error, "widici").await.unwrap();
+        assert_eq!(result.description, "An error occurred when deserializing the user data")
+    }
+    */
 }

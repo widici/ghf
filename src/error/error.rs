@@ -37,4 +37,13 @@ pub async fn get_error(e: anyhow::Error, username: &str) -> Result<Error<'_>> {
     } else {
         Ok(Error::new("An unexpected error occurred", None))
     }
+
+    /* Uses an unstable feature std::any::type_value_of_val()
+    return match std::any::type_name_of_val(&e) {
+        "reqwest::Error" => get_request_error(username).await,
+        "serde_json::Error" => Ok(Error::new("An error occurred when deserializing the user data", None)),
+        "image::ImageError" => Ok(Error::new("An error occurred while processing the Github avatar", None)),
+        &_ => Ok(Error::new("An unexpected error occurred", None))
+    }
+    */
 }

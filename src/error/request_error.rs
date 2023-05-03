@@ -63,7 +63,7 @@ pub async fn get_request_error(username: &str) -> Result<Error<'_>> {
     Ok(Error::new(message, None))
 }
 
-fn handle_rate_limit(reset: u64) -> Result<Error<'static>> {
+pub fn handle_rate_limit(reset: u64) -> Result<Error<'static>> {
     let ratelimit_reset= UNIX_EPOCH + Duration::from_secs(reset);
     let delay = ratelimit_reset.duration_since(SystemTime::now())?.as_secs();
     let solution = {
