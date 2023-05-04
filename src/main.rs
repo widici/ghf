@@ -1,6 +1,7 @@
 mod api;
 mod parsing;
 mod error;
+mod util;
 
 use colored::{ColoredString, Colorize};
 use fields_iter::FieldsIter;
@@ -122,7 +123,7 @@ mod tests {
         let reset = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() + 30;
         let result = handle_rate_limit(reset).unwrap();
         let seconds = (result.solution.unwrap().split(" ").collect::<Vec<&str>>()[6]
-            .parse::<f32>().unwrap()/10.0).round()*10.0;
+            .parse::<f32>().unwrap() / 10.0).round() * 10.0;
 
         assert_eq!(result.description, "Ratelimit exceeded");
         assert!(result.solution.unwrap().starts_with("Try again in 0 minutes &"));

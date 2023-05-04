@@ -1,6 +1,6 @@
-use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
 use anyhow::Result;
+use crate::util::request::request;
 
 #[derive(Serialize, Deserialize, fields_iter::FieldsInspect, Debug)]
 pub struct ProfileData {
@@ -25,10 +25,7 @@ pub struct ProfileData {
 }
 
 pub async fn request_profile(username: &str) -> Result<ProfileData> {
-    let result: ProfileData = reqwest::Client::new()
-        .get(&format!("https://api.github.com/users/{}", username))
-        .header(USER_AGENT, "ghfetch")
-        .send()
+    let result: ProfileData = request(&format!("https://api.github.com/users/{}", username))
         .await?
         .json()
         .await?;

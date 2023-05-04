@@ -2,6 +2,7 @@ use colored::Colorize;
 use image::{DynamicImage, GenericImageView, Rgba};
 use image::imageops::FilterType;
 use anyhow::Result;
+use crate::util::request::request;
 
 pub struct ImageData {
     image: DynamicImage
@@ -9,11 +10,13 @@ pub struct ImageData {
 
 impl ImageData {
     pub async fn new(id: i32) -> Result<ImageData> {
-        let endpoint = format!("https://avatars.githubusercontent.com/u/{}", id);
-        let image_bytes = reqwest::get(&endpoint).await.unwrap()
-            .bytes().await.unwrap();
+        let url = &format!("https://avatars.githubusercontent.com/u/{}", id);
+        let image_bytes = request(url)
+            .await?
+            .bytes()
+            .await?;
 
-        let image = image::load_from_memory(&image_bytes).unwrap();
+        let image = image::load_from_memory(&image_bytes)?;
         return Ok ( ImageData { image } )
     }
 
