@@ -6,11 +6,15 @@ mod util;
 use colored::{ColoredString, Colorize};
 use fields_iter::FieldsIter;
 use anyhow::Result;
+use std::fs::OpenOptions;
+use std::io::BufWriter;
+
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
 use crate::api::image::{ImageData};
 use crate::error::error::{get_error};
 use crate::parsing::parse;
+use crate::util::request::ConfigData;
 
 struct UserData {
     profile_data: ProfileData,
@@ -84,17 +88,23 @@ async fn main() -> Result<()> {
 
     if let Some(("auth", auth_args)) = args.subcommand() {
         let token = auth_args.get_one::<String>("TOKEN").unwrap();
-        println!("{}", token);
+        let mut config: ConfigData = ConfigData::new()?;
+        config.token = Some(token.to_owned());
+
+        let file = OpenOptions::new().write(true).truncate(true).open("config.json")?;
+        serde_json::to_writer_pretty(BufWriter::new(file), &config)?;
+
+        println!("Added authentication token: {}", token);
         return Ok(())
     }
 
-    let username: &String = args.get_one::<String>("NAME").unwrap();
+    let username: &str = args.get_one::<String>("NAME").unwrap().as_str();
     let color = args.get_one::<String>("color").map(|s|{ s.to_owned() });
 
-    let user_data: UserData = match UserData::new(&*username, color).await {
+    let user_data: UserData = match UserData::new(username, color).await {
         Ok(data) => data,
         Err(error) => {
-            let error_obj = get_error(error, &*username).await?;
+            let error_obj = get_error(error, username).await?;
             eprintln!("{}", error_obj);
             std::process::exit(1);
         }

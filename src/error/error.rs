@@ -14,7 +14,7 @@ impl<'a> Display for Error<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "{}", &self.description.color("red"))?;
         if let Some(solution) = self.solution {
-            writeln!(f, "{}", solution.color("red"))?;
+            write!(f, "{}", solution.color("red"))?;
         }
 
         Ok(())
