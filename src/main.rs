@@ -82,7 +82,13 @@ async fn main() -> Result<()> {
         }
     };
 
-    let username: &String = args.get_one::<String>("name").unwrap();
+    if let Some(("auth", auth_args)) = args.subcommand() {
+        let token = auth_args.get_one::<String>("TOKEN").unwrap();
+        println!("{}", token);
+        return Ok(())
+    }
+
+    let username: &String = args.get_one::<String>("NAME").unwrap();
     let color = args.get_one::<String>("color").map(|s|{ s.to_owned() });
 
     let user_data: UserData = match UserData::new(&*username, color).await {
@@ -94,7 +100,7 @@ async fn main() -> Result<()> {
         }
     };
 
-    user_data.display().await.unwrap();
+    user_data.display().await?;
 
     Ok(())
 }
