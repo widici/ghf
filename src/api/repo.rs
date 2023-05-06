@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use anyhow::Result;
-use crate::util::request::request;
+use crate::api::request::request;
 
 #[derive(Serialize, Deserialize, fields_iter::FieldsInspect, Debug)]
 pub struct RepoData {

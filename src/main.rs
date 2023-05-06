@@ -1,20 +1,16 @@
 mod api;
 mod parsing;
 mod error;
-mod util;
 
 use colored::{ColoredString, Colorize};
 use fields_iter::FieldsIter;
 use anyhow::Result;
-use std::fs::OpenOptions;
-use std::io::BufWriter;
 
 use crate::api::profile::{ProfileData, request_profile};
 use crate::api::repo::{RepoData, request_repos};
 use crate::api::image::{ImageData};
 use crate::error::error::{get_error};
 use crate::parsing::parse;
-use crate::util::request::ConfigData;
 
 struct UserData {
     profile_data: ProfileData,
@@ -79,24 +75,15 @@ impl UserData {
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = match parse() {
-        Ok(arguments) => arguments,
+        Ok(arguments) => match arguments {
+            None => { return Ok(()) }
+            Some(some_args) => some_args
+        }
         Err(..) => {
             eprintln!("Unexpected error occurred while parsing arguments");
             std::process::exit(1)
         }
     };
-
-    if let Some(("auth", auth_args)) = args.subcommand() {
-        let token = auth_args.get_one::<String>("TOKEN").unwrap();
-        let mut config: ConfigData = ConfigData::new()?;
-        config.token = Some(token.to_owned());
-
-        let file = OpenOptions::new().write(true).truncate(true).open("config.json")?;
-        serde_json::to_writer_pretty(BufWriter::new(file), &config)?;
-
-        println!("Added authentication token: {}", token);
-        return Ok(())
-    }
 
     let username: &str = args.get_one::<String>("NAME").unwrap().as_str();
     let color = args.get_one::<String>("color").map(|s|{ s.to_owned() });

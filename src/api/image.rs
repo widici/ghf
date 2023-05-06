@@ -2,7 +2,7 @@ use colored::Colorize;
 use image::{DynamicImage, GenericImageView, Rgba};
 use image::imageops::FilterType;
 use anyhow::Result;
-use crate::util::request::request;
+use crate::api::request::request;
 
 pub struct ImageData {
     image: DynamicImage
