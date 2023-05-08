@@ -1,14 +1,11 @@
 use crate::error::error;
+use crate::api::request::request;
 use error::Error;
-use reqwest::header::USER_AGENT;
 use std::time::{SystemTime, UNIX_EPOCH, Duration};
 use anyhow::Result;
 
 pub async fn get_request_error(username: &str) -> Result<Error<'_>> {
-    let response = reqwest::Client::new()
-        .get(&format!("https://api.github.com/users/{}", username))
-        .header(USER_AGENT, "ghfetch")
-        .send()
+    let response = request(&format!("https://api.github.com/users/{}", username))
         .await;
 
     let result = match response {

@@ -104,9 +104,11 @@ async fn main() -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use std::time::{SystemTime, UNIX_EPOCH};
     use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
     use error::request_error::handle_rate_limit;
+    use crate::api::request::ConfigData;
+    use crate::parsing::authenticate;
 
     #[tokio::test]
     async fn requests_works() {
@@ -131,6 +133,19 @@ mod tests {
         assert_eq!(result.description, "Ratelimit exceeded");
         assert!(result.solution.unwrap().starts_with("Try again in 0 minutes &"));
         assert_eq!(seconds, 30 as f32)
+    }
+
+    #[test]
+    fn authenticate_test() {
+        let new_token: String = String::from("token");
+        let old_token = ConfigData::new().unwrap().token.unwrap();
+        let auth_result = authenticate(&new_token);
+
+        assert!(auth_result.is_ok());
+        assert_eq!(new_token, ConfigData::new().unwrap().token.unwrap());
+
+        let re_auth_result = authenticate(&old_token);
+        assert!(re_auth_result.is_ok());
     }
 
     /*
