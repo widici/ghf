@@ -7,7 +7,7 @@ use crate::error::error::Error;
 
 #[derive(Deserialize, Serialize)]
 pub struct ConfigData {
-    pub token: Option<String>,
+    pub token: String,
     pub user: String,
 }
 
@@ -23,10 +23,10 @@ impl ConfigData {
 pub async fn request(url: &str) -> Result<Response> {
     let config = ConfigData::new()?;
 
-    return if let Some(token) = config.token {
-        Ok(request_with_token(&token, &config.user, url).await?)
-    } else {
+    return if config.token.is_empty() {
         Ok(request_without_token(&config.user, url).await?)
+    } else {
+        Ok(request_with_token(&config.token, &config.user, url).await?)
     }
 }
 

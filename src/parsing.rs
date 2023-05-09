@@ -3,6 +3,7 @@ use std::io::BufWriter;
 use clap::{command, Command, arg, Arg, ArgMatches};
 use anyhow::Result;
 use crate::api::request::ConfigData;
+use crate::error::error::Error;
 
 pub fn parse() -> Result<Option<ArgMatches>> {
     let args = command!()
@@ -24,8 +25,15 @@ pub fn parse() -> Result<Option<ArgMatches>> {
         .get_matches();
 
     if let Some(("auth", auth_args)) = args.subcommand() {
-        let token = auth_args.get_one::<String>("TOKEN").unwrap().as_str();
-        return authenticate(token)
+        return match auth_args.get_one::<String>("TOKEN") {
+            Some(token) => {
+                authenticate(token)
+            }
+            None => {
+                println!("{}", Error::new("A token needs to be provided", None));
+                std::process::exit(1)
+            }
+        }
     }
 
     return Ok(Option::from(args))
@@ -33,7 +41,7 @@ pub fn parse() -> Result<Option<ArgMatches>> {
 
 pub fn authenticate(token: &str) -> Result<Option<ArgMatches>>{
     let mut config: ConfigData = ConfigData::new()?;
-    config.token = Some(token.to_owned());
+    config.token = token.to_owned();
 
     let file = OpenOptions::new().write(true).truncate(true).open("config.json")?;
     serde_json::to_writer_pretty(BufWriter::new(file), &config)?;
