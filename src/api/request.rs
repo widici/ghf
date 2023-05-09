@@ -33,7 +33,7 @@ pub async fn request(url: &str) -> Result<Response> {
 async fn request_with_token(token: &str, user: &str, url: &str) -> Result<Response> {
     let response = reqwest::Client::new()
         .get(url)
-        .header(USER_AGENT, format!("ghfetch ({})", user))
+        .header(USER_AGENT, format!("ghf ({})", user))
         .header(AUTHORIZATION, format!("Bearer {}", token))
         .send()
         .await?;
@@ -49,7 +49,7 @@ async fn request_with_token(token: &str, user: &str, url: &str) -> Result<Respon
 async fn request_without_token(user: &str, url: &str) -> Result<Response> {
     return Ok(reqwest::Client::new()
         .get(url)
-        .header(USER_AGENT, format!("ghfetch ({})", user))
+        .header(USER_AGENT, format!("ghf ({})", user))
         .send()
         .await?)
 }
