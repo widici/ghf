@@ -5,58 +5,53 @@ mod error;
 use colored::{ColoredString, Colorize};
 use fields_iter::FieldsIter;
 use anyhow::Result;
+use std::fmt::{Display, Formatter};
 
-use crate::api::profile::{ProfileData, request_profile};
-use crate::api::repo::{RepoData, request_repos};
+use crate::api::profile::request_profile;
+use crate::api::repo::request_repos;
 use crate::api::image::{ImageData};
 use crate::error::error::{get_error};
 use crate::parsing::parse;
 
-struct UserData {
-    profile_data: ProfileData,
-    repo_data: RepoData,
-    image_data: ImageData,
+struct UserData<'a> {
+    fields: Vec<[&'a str; 2]>,
+    ascii_image: Vec<String>,
     average_color: (u8, u8, u8),
-    selected_color: Option<String>
+    selected_color: Option<String>,
+    username: String,
 }
 
-impl UserData {
-    async fn new(username: &str, selected_color: Option<String>) -> Result<UserData> {
+impl<'a> UserData<'a> {
+    async fn new(username: &'a str, selected_color: Option<String>) -> Result<UserData> {
         let profile_data= request_profile(username).await?;
         let repo_data = request_repos(username).await?;
-        let image_data = ImageData::new(profile_data.id).await?;
-        let average_color: (u8, u8, u8) = image_data.average_color();
 
-        return Ok( UserData { profile_data, repo_data, image_data, average_color, selected_color} )
-    }
-
-    async fn display(&self) -> Result<()> {
-        let mut fields: Vec<String> = Vec::new();
-
-        let title: String = format!("https://github.com/{}", &self.profile_data.login.as_ref().unwrap());
-        let dashes: String = "-".repeat(title.len());
-        fields.append(&mut vec![title, dashes]);
-
-        for (name, value) in FieldsIter::new(&self.profile_data)
-            .chain(FieldsIter::new(&self.repo_data))
+        let mut fields: Vec<[&'a str; 2]> = vec![];
+        for (name, value) in FieldsIter::new(&profile_data)
+            .chain(FieldsIter::new(&repo_data))
         {
+            let mut field_value: String = String::from("");
+
             if let Some(value) = value.downcast_ref::<Option<String>>() {
                 if let Some(inner) = value.as_ref().filter(|v| !v.is_empty()) {
                     let inner = inner.replace("\n", " ").replace("\r", " ");
-                    fields.insert(fields.len(), format!("{}: {}", &self.color(name), inner));
+                    field_value = inner;
                 }
             } else if let Some(value) = value.downcast_ref::<i32>() {
-                fields.insert(fields.len(), format!("{}: {}", &self.color(name), value));
+                field_value = value.to_string();
+            }
+
+            if !(field_value.is_empty()) {
+                let static_field_value = Box::leak(field_value.into_boxed_str());
+                fields.insert(fields.len(), [name, static_field_value])
             }
         }
 
-        let mut rows = self.image_data.get_ascii_art(fields.len() as u32)?;
+        let image_data: ImageData = ImageData::new(profile_data.id, fields.len() as u32 + 2).await?;
+        let ascii_image = image_data.get_ascii_art()?;
+        let average_color: (u8, u8, u8) = image_data.average_color();
 
-        for field in fields {
-            println!("{}   {}", rows.remove(0), field)
-        }
-
-        Ok(())
+        return Ok( UserData { fields, ascii_image, average_color, selected_color, username: profile_data.login.unwrap() } )
     }
 
     fn color(&self, string: &str) -> ColoredString {
@@ -66,9 +61,39 @@ impl UserData {
                 string.truecolor(rgb.0, rgb.1, rgb.2)
             }
             Some(selected_color) => {
-                string.color(&**selected_color)
+                string.color(selected_color.as_str())
             }
         }
+    }
+}
+
+impl<'a> Display for UserData<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let mut formatted_fields: Vec<String> = self.fields
+            .iter()
+            .flat_map(|field| {
+                let formatted_field = format!("{}: {}", &self.color(field[0]), field[1]);
+                vec![formatted_field]
+            })
+            .collect();
+
+        let title: String = format!("https://github.com/{}", &self.username);
+        formatted_fields.splice(..0, vec![
+            title.clone(), "-".repeat(title.clone().len())
+        ]);
+
+
+        let rows: Vec<String> = self.ascii_image
+            .iter()
+            .zip(formatted_fields.iter())
+            .map(|(image, field)| {
+                format!("{}   {}", image, field)
+            })
+            .collect();
+
+        write!(f, "{}", rows.join("\n")).unwrap();
+
+        Ok(())
     }
 }
 
@@ -97,7 +122,7 @@ async fn main() -> Result<()> {
         }
     };
 
-    user_data.display().await?;
+    println!("{}", user_data);
 
     Ok(())
 }

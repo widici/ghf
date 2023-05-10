@@ -9,14 +9,15 @@ pub struct ImageData {
 }
 
 impl ImageData {
-    pub async fn new(id: i32) -> Result<ImageData> {
+    pub async fn new(id: i32, size: u32) -> Result<ImageData> {
         let url = &format!("https://avatars.githubusercontent.com/u/{}", id);
         let image_bytes = request(url)
             .await?
             .bytes()
             .await?;
 
-        let image = image::load_from_memory(&image_bytes)?;
+        let image: DynamicImage = image::load_from_memory(&image_bytes)?
+            .resize(size*2, size*2, FilterType::Nearest);
         return Ok ( ImageData { image } )
     }
 
@@ -24,7 +25,7 @@ impl ImageData {
         let mut rgb = (0, 0, 0);
         let mut amount = 0;
 
-        for pixel in self.image.pixels().step_by(10) {
+        for pixel in self.image.pixels() {
             let (_, _, Rgba([r, g, b, a])) = pixel;
 
             if !(r >= 240 && g >= 240 && b >= 240) && !(r <= 20 && g <= 40 && b <= 20) && (a != 0) {
@@ -40,16 +41,14 @@ impl ImageData {
         }
     }
 
-    pub fn get_ascii_art(&self, size: u32) -> Result<Vec<String>> {
-        let image = self.image.resize(size*2, size*2, FilterType::Nearest);
-
-        let (height, width) = image.dimensions();
+    pub fn get_ascii_art(&self) -> Result<Vec<String>> {
+        let (height, width) = self.image.dimensions();
 
         let mut rows: Vec<String> = Vec::new();
         for y in (0..height).step_by(2) {
             let mut row: Vec<String> = Vec::new();
             for x in 0..width {
-                let pixel = image.get_pixel(x,y);
+                let pixel = self.image.get_pixel(x,y);
                 let mut intensity = pixel[0]/3 + pixel[1]/3 + pixel[2]/3;
                 if pixel[3] == 0 {
                     intensity = 0;
