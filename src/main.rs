@@ -10,7 +10,7 @@ use std::fmt::{Display, Formatter};
 use crate::api::profile::request_profile;
 use crate::api::repo::request_repos;
 use crate::api::image::{ImageData};
-use crate::error::error::{get_error};
+use crate::error::error::{get_error, Error};
 use crate::parsing::parse;
 
 struct UserData<'a> {
@@ -110,7 +110,10 @@ async fn main() -> Result<()> {
         }
     };
 
-    let username: &str = args.get_one::<String>("NAME").unwrap().as_str();
+    let username: &str = args.get_one::<String>("NAME").unwrap_or_else(|| {
+        eprintln!("{}", Error::new("A username needs to be provided", None));
+        std::process::exit(1)
+    });
     let color = args.get_one::<String>("color").map(|s|{ s.to_owned() });
 
     let user_data: UserData = match UserData::new(username, color).await {

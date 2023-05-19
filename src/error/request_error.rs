@@ -30,7 +30,7 @@ pub async fn get_request_error(username: &str) -> Result<Error<'_>> {
 
     if result.status().is_success() {
         let description = {
-            let temp = String::from(&format!("HTTP error occurred: {}", result.status()));
+            let temp = format!("HTTP error occurred: {}", result.status());
             Box::leak(temp.into_boxed_str())
         };
         return Ok(Error::new(description, None));
@@ -64,7 +64,7 @@ pub fn handle_rate_limit(reset: u64) -> Result<Error<'static>> {
     let ratelimit_reset= UNIX_EPOCH + Duration::from_secs(reset);
     let delay = ratelimit_reset.duration_since(SystemTime::now())?.as_secs();
     let solution = {
-        let temp = String::from(format!("Try again in {} minutes & {} seconds", delay/60, delay%60));
+        let temp = format!("Try again in {} minutes & {} seconds", delay/60, delay%60);
         Box::leak(temp.into_boxed_str())
     };
     return Ok(Error::new("Ratelimit exceeded", Some(solution)))

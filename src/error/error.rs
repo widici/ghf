@@ -35,7 +35,11 @@ pub async fn get_error(e: anyhow::Error, username: &str) -> Result<Error<'_>> {
     } else if e.is::<image::ImageError>() {
         Ok(Error::new("An error occurred while processing the Github avatar", None))
     } else {
-        Ok(Error::new("An unexpected error occurred", None))
+        let description = {
+            let temp: String = format!("An unexpected error occurred: {:?}", e);
+            Box::leak(temp.into_boxed_str())
+        };
+        return Ok(Error::new(description, None))
     }
 
     /* Uses an unstable feature std::any::type_value_of_val()
