@@ -28,7 +28,7 @@ ghf auth <token>
 
 ```
 ghf <username>
-ghf <username> --color <color> Print the text in a specific color
+ghf <username> --color <color> # Print the text in a specific color
 ```
 
 For more information about the commands run the following command:
